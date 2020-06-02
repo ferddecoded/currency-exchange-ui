@@ -25,9 +25,9 @@ export const H1 = styled.h1`
     height: 1rem;
     background-color: ${({ theme }) => theme.primaryNavy};
     content: '';
-    bottom: 2rem;
+    bottom: 1rem;
     left: -8px;
-    z-index: 998;
+    z-index: -1;
   }
 `;
 

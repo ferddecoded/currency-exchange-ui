@@ -2,8 +2,8 @@ import styled, { css } from 'styled-components';
 
 export const Button = styled.button`
   cursor: pointer;
-  padding: 12px;
-  margin: 12px;
+  padding: 16px;
+  margin: 16px;
   border-radius: 10px;
   min-width: 96px;
   transition: ${({ theme }) => theme.defaultTransition};
