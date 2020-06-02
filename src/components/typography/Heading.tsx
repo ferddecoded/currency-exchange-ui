@@ -23,7 +23,7 @@ export const H1 = styled.h1`
     display: block;
     width: calc(100% + 16px);
     height: 1rem;
-    background-color: ${({ theme }) => theme.backgroundColor};
+    background-color: ${({ theme }) => theme.primaryNavy};
     content: '';
     bottom: 2rem;
     left: -8px;

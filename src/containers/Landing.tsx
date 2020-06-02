@@ -6,10 +6,18 @@ import { Grid } from '../components/grid/Grid';
 import { Box } from '../components/box/Box';
 
 const Container = styled.div`
+  box-shadow: ${({ theme }) => theme.heavyBS};
   background-color: ${({ theme }) => theme.darkPurple};
   height: 100%;
   border-radius: 5px;
   padding: 48px 0px;
+`;
+
+const HeadingContainer = styled.div`
+  width: calc(100% - 32px);
+  margin: 16px;
+  background-color: ${({ theme }) => theme.backgroundColor};
+  border-radius: 5px;
 `;
 
 const StyledBox = styled(Box)`
@@ -27,11 +35,11 @@ const Landing: React.FC<Props> = (): JSX.Element => {
   })
     .then((res) => res.json())
     .then((data) => data);
-
-  console.log(process.env.NODE_ENV);
   return (
     <Container>
-      <H1>Exchanges</H1>
+      <HeadingContainer>
+        <H1>Exchanges</H1>
+      </HeadingContainer>
       <StyledBox>
         <StyledGrid>
           <Button>Log In</Button>
