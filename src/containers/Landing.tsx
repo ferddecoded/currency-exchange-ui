@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
+import { useDispatch } from 'react-redux';
 import { H1 } from '../components/typography/Heading';
 import { Button } from '../components/button/Button';
 import { Grid } from '../components/grid/Grid';
 import { Box } from '../components/box/Box';
 import { Image } from '../components/image/Image';
+import request from '../api/request';
+import { TextInput } from '../components/form/TextInput';
+import { loginUser } from '../store/userSlice';
 
 const Container = styled.div`
   box-shadow: ${({ theme }) => theme.heavyBS};
@@ -37,6 +41,8 @@ const StyledGrid = styled(Grid)`
 
 const ImageContainer = styled(Box)`
   padding: 16px;
+  width: 66.66%;
+  margin: 0 auto;
 `;
 
 const StyledImage = styled(Image)`
@@ -44,11 +50,46 @@ const StyledImage = styled(Image)`
 `;
 
 const Landing: React.FC<Props> = (): JSX.Element => {
-  fetch('http://localhost:5000/api/currencyData', {
-    method: 'GET',
-  })
-    .then((res) => res.json())
-    .then((data) => data);
+  const dispatch = useDispatch();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+
+  const onChange = ({ target }) => {
+    setFormData({
+      ...formData,
+      [target.name]: target.value,
+    });
+  };
+
+  // if (isAuthenticated) {
+  //   return <Redirect to="/dashboard" />;
+  // }
+
+  const onSubmit = (e) => {
+    e.preventDefault();
+    dispatch(loginUser(formData));
+  };
+
+  const fetchData = async () => {
+    const res = await request({
+      method: 'GET',
+      url: 'https://jsonplaceholder.typicode.com/todos/1',
+    });
+    console.log(res);
+
+    const currRes = await request({
+      method: 'GET',
+      url: '/api/currencyData',
+    });
+
+    console.log(currRes);
+  };
+
+  fetchData();
+
+  const { email, password } = formData;
   return (
     <Container>
       <StyledBox>
@@ -57,7 +98,21 @@ const Landing: React.FC<Props> = (): JSX.Element => {
             <H1>Exchanges</H1>
           </HeadingContainer>
           <Grid>
-            <Button>Log In</Button>
+            <Button onClick={onSubmit}>Log In</Button>
+            <TextInput
+              type="text"
+              id="email"
+              label="email"
+              onChange={onChange}
+              value={email}
+            />
+            <TextInput
+              type="password"
+              id="password"
+              label="password"
+              onChange={onChange}
+              value={password}
+            />
             <Button>Sign In As Guest</Button>
           </Grid>
           <ImageContainer>

@@ -6,6 +6,8 @@ import Landing from './containers/Landing';
 import AppContainer from './layout/AppContainer';
 import theme from './theme';
 import AppWrapper from './layout/AppWrapper';
+import store from './store';
+import { Provider } from 'react-redux';
 
 const GlobalStyle = createGlobalStyle`
   html {
@@ -43,16 +45,18 @@ const GlobalStyle = createGlobalStyle`
 const App = () => {
   return (
     <ThemeProvider theme={theme}>
-      <GlobalStyle />
-      <Router>
-        <AppContainer>
-          <AppWrapper>
-            <Switch>
-              <Route exact path="/" component={Landing} />
-            </Switch>
-          </AppWrapper>
-        </AppContainer>
-      </Router>
+      <Provider store={store}>
+        <GlobalStyle />
+        <Router>
+          <AppContainer>
+            <AppWrapper>
+              <Switch>
+                <Route exact path="/" component={Landing} />
+              </Switch>
+            </AppWrapper>
+          </AppContainer>
+        </Router>
+      </Provider>
     </ThemeProvider>
   );
 };
