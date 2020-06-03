@@ -19,16 +19,15 @@ const Input = styled.input`
   padding: 10px 20px;
   border-radius: 20px;
   position: relative;
-  background-color: ${({ theme }) => theme.grey};
+  background-color: ${({ theme }) => theme.darkPurple};
 
   + label {
-    color: ${({ theme }) => theme.primaryColor};
+    color: ${({ theme }) => theme.lightgrey};
     transform: translateY(0);
-    background-color: ${({ theme }) => theme.grey};
+    background-color: ${({ theme }) => theme.primaryColor};
   }
 
   &:focus {
-    border-color: ${({ theme }) => theme.primaryColor};
     + label {
       ${({ theme }) => theme.primaryColor};
       transform: translateY(-20px);

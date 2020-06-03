@@ -9,6 +9,7 @@ import { Image } from '../components/image/Image';
 import request from '../api/request';
 import { TextInput } from '../components/form/TextInput';
 import { loginUser } from '../store/userSlice';
+import { Divider } from '../layout/Divider';
 
 const Container = styled.div`
   box-shadow: ${({ theme }) => theme.heavyBS};
@@ -39,6 +40,14 @@ const StyledGrid = styled(Grid)`
   height: 100%;
 `;
 
+const InputContainer = styled.div`
+  margin: 24px 0px;
+
+  div {
+    margin-bottom: 12px;
+  }
+`;
+
 const ImageContainer = styled(Box)`
   padding: 16px;
   width: 66.66%;
@@ -51,14 +60,28 @@ const StyledImage = styled(Image)`
 
 const Landing: React.FC<Props> = (): JSX.Element => {
   const dispatch = useDispatch();
-  const [formData, setFormData] = useState({
+  const [loginData, setLoginData] = useState({
     email: '',
     password: '',
   });
+  const [registerData, setRegisterData] = useState({
+    registerEmail: '',
+    registerPassword: '',
+    password2: '',
+  });
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [registerOpen, setRegisterOpen] = useState(false);
 
-  const onChange = ({ target }) => {
-    setFormData({
-      ...formData,
+  const loginOnChange = ({ target }) => {
+    setLoginData({
+      ...loginData,
+      [target.name]: target.value,
+    });
+  };
+
+  const registerOnChange = ({ target }) => {
+    setRegisterData({
+      ...registerData,
       [target.name]: target.value,
     });
   };
@@ -69,7 +92,7 @@ const Landing: React.FC<Props> = (): JSX.Element => {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    dispatch(loginUser(formData));
+    dispatch(loginUser(loginData));
   };
 
   const fetchData = async () => {
@@ -89,7 +112,8 @@ const Landing: React.FC<Props> = (): JSX.Element => {
 
   fetchData();
 
-  const { email, password } = formData;
+  const { email, password } = loginData;
+  const { registerEmail, registerPassword, password2 } = registerData;
   return (
     <Container>
       <StyledBox>
@@ -98,22 +122,79 @@ const Landing: React.FC<Props> = (): JSX.Element => {
             <H1>Exchanges</H1>
           </HeadingContainer>
           <Grid>
-            <Button onClick={onSubmit}>Log In</Button>
-            <TextInput
-              type="text"
-              id="email"
-              label="email"
-              onChange={onChange}
-              value={email}
-            />
-            <TextInput
-              type="password"
-              id="password"
-              label="password"
-              onChange={onChange}
-              value={password}
-            />
-            <Button>Sign In As Guest</Button>
+            <Button
+              onClick={() => {
+                if (registerOpen) {
+                  setRegisterOpen(false);
+                }
+                setLoginOpen(!loginOpen);
+              }}
+              primary
+            >
+              Log In
+            </Button>
+            {loginOpen && (
+              <InputContainer>
+                <TextInput
+                  type="text"
+                  id="email"
+                  label="email"
+                  onChange={loginOnChange}
+                  value={email}
+                />
+                <TextInput
+                  type="password"
+                  id="password"
+                  label="password"
+                  onChange={loginOnChange}
+                  value={password}
+                />
+                <Box>
+                  <Button onClick={onSubmit}>Enter</Button>
+                </Box>
+              </InputContainer>
+            )}
+            <Button
+              onClick={() => {
+                if (loginOpen) {
+                  setLoginOpen(false);
+                }
+                setRegisterOpen(!registerOpen);
+              }}
+              primary
+            >
+              Register
+            </Button>
+            {registerOpen && (
+              <InputContainer>
+                <TextInput
+                  type="text"
+                  id="registerEmail"
+                  label="Register your email"
+                  onChange={registerOnChange}
+                  value={registerEmail}
+                />
+                <TextInput
+                  type="password"
+                  id="registerPassword"
+                  label="Create a password"
+                  onChange={registerOnChange}
+                  value={registerPassword}
+                />
+                <TextInput
+                  type="password"
+                  id="password2"
+                  label="enter password again"
+                  onChange={registerOnChange}
+                  value={password2}
+                />
+                <Box>
+                  <Button onClick={onSubmit}>Sign Up</Button>
+                </Box>
+              </InputContainer>
+            )}
+            <Divider color="#505562" />
+            <Button primary>Sign In As Guest</Button>
           </Grid>
           <ImageContainer>
             <StyledImage src="/assets/currency-graph.png" alt="text" />
