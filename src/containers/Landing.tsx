@@ -6,7 +6,6 @@ import { Button } from '../components/button/Button';
 import { Grid } from '../components/grid/Grid';
 import { Box } from '../components/box/Box';
 import { Image } from '../components/image/Image';
-import request from '../api/request';
 import { TextInput } from '../components/form/TextInput';
 import { loginUser } from '../store/userSlice';
 import { Divider } from '../layout/Divider';
@@ -64,11 +63,13 @@ const Landing: React.FC<Props> = (): JSX.Element => {
     email: '',
     password: '',
   });
+
   const [registerData, setRegisterData] = useState({
     registerEmail: '',
     registerPassword: '',
     password2: '',
   });
+
   const [loginOpen, setLoginOpen] = useState(false);
   const [registerOpen, setRegisterOpen] = useState(false);
 
@@ -94,23 +95,6 @@ const Landing: React.FC<Props> = (): JSX.Element => {
     e.preventDefault();
     dispatch(loginUser(loginData));
   };
-
-  const fetchData = async () => {
-    const res = await request({
-      method: 'GET',
-      url: 'https://jsonplaceholder.typicode.com/todos/1',
-    });
-    console.log(res);
-
-    const currRes = await request({
-      method: 'GET',
-      url: '/api/currencyData',
-    });
-
-    console.log(currRes);
-  };
-
-  fetchData();
 
   const { email, password } = loginData;
   const { registerEmail, registerPassword, password2 } = registerData;
