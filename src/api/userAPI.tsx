@@ -7,6 +7,12 @@ const register = (config) =>
     ...config,
   });
 
+const get = () =>
+  request({
+    url: '/api/auth',
+    method: 'GET',
+  });
+
 const login = (config) =>
   request({
     url: '/api/auth',
@@ -17,4 +23,5 @@ const login = (config) =>
 export default {
   register,
   login,
+  get,
 };

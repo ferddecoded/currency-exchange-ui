@@ -2,7 +2,24 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 import userAPI from '../api/userAPI';
+import { setAuthToken } from '../utils/setAuthToken';
 
+export const loadUser = createAsyncThunk('loadUser', async () => {
+  try {
+    if (localStorage.token) {
+      setAuthToken(localStorage.token);
+    }
+
+    const res = await userAPI.get();
+    return res.user;
+  } catch (error) {
+    // create error handling
+    console.error(error);
+    return null;
+  }
+});
+
+// TODO: convert to normal thunk
 export const loginUser = createAsyncThunk('login', async (data: object) => {
   try {
     const config = {
@@ -14,11 +31,13 @@ export const loginUser = createAsyncThunk('login', async (data: object) => {
     const res = await userAPI.login(config);
     return res.token;
   } catch (error) {
+    // create error handling
     console.error(error);
     return null;
   }
 });
 
+// TODO: convert to normal thunk
 export const registerUser = createAsyncThunk(
   'register',
   async (data: object) => {
@@ -92,6 +111,22 @@ const userSlice = createSlice({
       state.isFetching = true;
     },
     [registerUser.rejected.toString()]: (state) => {
+      state.isFetching = false;
+      state.user = null;
+      state.token = null;
+      state.isAuthenticated = false;
+    },
+    // loadUser reducers
+    [loadUser.fulfilled.toString()]: (state, action) => {
+      const { payload } = action;
+      state.isFetching = false;
+      state.isAuthenticated = true;
+      state.token = payload;
+    },
+    [loadUser.pending.toString()]: (state) => {
+      state.isFetching = true;
+    },
+    [loadUser.rejected.toString()]: (state) => {
       state.isFetching = false;
       state.user = null;
       state.token = null;

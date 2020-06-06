@@ -181,7 +181,7 @@ const Landing: React.FC<Props> = (): JSX.Element => {
             <Button primary>Sign In As Guest</Button>
           </Grid>
           <ImageContainer>
-            <StyledImage src="/assets/currency-graph.png" alt="text" />
+            <StyledImage src="/assets/currency.png" alt="text" />
           </ImageContainer>
         </StyledGrid>
       </StyledBox>
