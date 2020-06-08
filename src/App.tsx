@@ -45,16 +45,15 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
-// set axios headers before app is loaded, if token is present
-// occurs when refreshing page
-if (localStorage.token) {
-  setAuthToken(localStorage.token);
-}
-
 const App = () => {
   // load user data if token has been filled
   useEffect(() => {
-    store.dispatch(loadUser());
+    // set axios headers before app is loaded, if token is present
+    // occurs when refreshing page
+    if (localStorage.token) {
+      setAuthToken(localStorage.token);
+      store.dispatch(loadUser());
+    }
   }, []);
 
   return (
