@@ -3,7 +3,7 @@ import styled, { css } from 'styled-components';
 
 const Container = styled.div`
   position: relative;
-  line-height: 14px;
+  line-height: 20px;
   margin: 0px;
   display: inline-block;
   width: 100%;
@@ -23,7 +23,7 @@ const Input = styled.input`
 
   + label {
     color: ${({ theme }) => theme.lightgrey};
-    transform: translateY(0);
+    transform: translateY(-3px);
     background-color: ${({ theme }) => theme.primaryColor};
   }
 
@@ -59,9 +59,23 @@ const Label = styled('label')`
   transform: translateY(-20px);
 `;
 
-export const TextInput = ({ label, id, value, onChange, type }) => (
+export const TextInput: React.FC<Props> = ({
+  label,
+  id,
+  value,
+  onChange,
+  type,
+}) => (
   <Container>
     <Input type={type} id={id} onChange={onChange} value={value} name={id} />
     {label && <Label htmlFor={id}>{label}</Label>}
   </Container>
 );
+
+interface Props {
+  label?: string;
+  id: string;
+  value: string | number;
+  onChange: (e) => void;
+  type: string;
+}

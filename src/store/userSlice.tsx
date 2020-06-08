@@ -105,7 +105,6 @@ export const loginUser = (formData: object) => async (dispatch) => {
 
 export const registerUser = (formData: object) => async (dispatch) => {
   try {
-    console.log({ formData });
     const config = {
       headers: {
         'Content-Type': 'application/json',

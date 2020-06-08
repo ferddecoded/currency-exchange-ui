@@ -11,7 +11,7 @@ const WrapperContainer = styled.div`
 `;
 
 interface Props {
-  children: JSX.Element;
+  children: JSX.Element | JSX.Element[];
 }
 
 const AppWrapper: React.FC<Props> = ({ children }) => (
