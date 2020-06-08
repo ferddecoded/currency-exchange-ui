@@ -9,7 +9,7 @@ import { Grid } from '../components/grid/Grid';
 import { Box } from '../components/box/Box';
 import { Image } from '../components/image/Image';
 import { TextInput } from '../components/form/TextInput';
-import { loginUser, getUser } from '../store/userSlice';
+import { loginUser, getUser, registerUser, setGuest } from '../store/userSlice';
 import { Divider } from '../layout/Divider';
 
 const Container = styled.div`
@@ -67,6 +67,7 @@ const Landing: React.FC<Props> = (): JSX.Element => {
   });
 
   const [registerData, setRegisterData] = useState({
+    registerName: '',
     registerEmail: '',
     registerPassword: '',
     password2: '',
@@ -97,11 +98,21 @@ const Landing: React.FC<Props> = (): JSX.Element => {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    dispatch(loginUser(loginData));
+    const registerConfig = {
+      name: registerName,
+      email: registerEmail,
+      password: registerPassword,
+    };
+    dispatch(loginOpen ? loginUser(loginData) : registerUser(registerConfig));
   };
 
   const { email, password } = loginData;
-  const { registerEmail, registerPassword, password2 } = registerData;
+  const {
+    registerEmail,
+    registerPassword,
+    password2,
+    registerName,
+  } = registerData;
   return (
     <Container>
       <StyledBox>
@@ -157,6 +168,13 @@ const Landing: React.FC<Props> = (): JSX.Element => {
               <InputContainer>
                 <TextInput
                   type="text"
+                  id="registerName"
+                  label="Register your name"
+                  onChange={registerOnChange}
+                  value={registerName}
+                />
+                <TextInput
+                  type="text"
                   id="registerEmail"
                   label="Register your email"
                   onChange={registerOnChange}
@@ -182,7 +200,9 @@ const Landing: React.FC<Props> = (): JSX.Element => {
               </InputContainer>
             )}
             <Divider color="#505562" />
-            <Button primary>Sign In As Guest</Button>
+            <Button primary onClick={() => dispatch(setGuest())}>
+              Sign In As Guest
+            </Button>
           </Grid>
           <ImageContainer>
             <StyledImage src="/assets/currency.png" alt="text" />

@@ -25,6 +25,10 @@ const userSlice = createSlice({
   name: 'user',
   initialState: userInitialState,
   reducers: {
+    setGuest: (state) => {
+      state.isAuthenticated = true;
+      state.isFetching = false;
+    },
     setUser: (state, action) => {
       state.user = action.payload;
     },
@@ -62,6 +66,7 @@ const userSlice = createSlice({
       state.isFetching = true;
     },
     [loadUser.rejected.toString()]: (state) => {
+      localStorage.removeItem('token');
       state.isFetching = false;
       state.user = null;
       state.token = null;
@@ -77,6 +82,7 @@ export const {
   setFetching,
   setAuthenticated,
   setToken,
+  setGuest,
 } = userSlice.actions;
 
 export const loginUser = (formData: object) => async (dispatch) => {
@@ -99,6 +105,7 @@ export const loginUser = (formData: object) => async (dispatch) => {
 
 export const registerUser = (formData: object) => async (dispatch) => {
   try {
+    console.log({ formData });
     const config = {
       headers: {
         'Content-Type': 'application/json',

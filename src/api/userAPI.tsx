@@ -2,7 +2,7 @@ import request from './request';
 
 const register = (config) =>
   request({
-    url: '/api/user',
+    url: '/api/users',
     method: 'POST',
     ...config,
   });

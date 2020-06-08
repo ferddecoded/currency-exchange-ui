@@ -11,6 +11,8 @@ import store from './store';
 import { Provider } from 'react-redux';
 import { setAuthToken } from './utils/setAuthToken';
 import { loadUser } from './store/userSlice';
+import Dashboard from './containers/Dashboard';
+import PrivateRoute from './routing/PrivateRoute';
 
 const GlobalStyle = createGlobalStyle`
   html {
@@ -65,6 +67,7 @@ const App = () => {
             <AppWrapper>
               <Switch>
                 <Route exact path="/" component={Landing} />
+                <PrivateRoute exact path="/dashboard" component={Dashboard} />
               </Switch>
             </AppWrapper>
           </AppContainer>
