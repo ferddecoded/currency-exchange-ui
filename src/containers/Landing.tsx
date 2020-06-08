@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
+import { Redirect } from 'react-router-dom';
 import styled from 'styled-components';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+
 import { H1 } from '../components/typography/Heading';
 import { Button } from '../components/button/Button';
 import { Grid } from '../components/grid/Grid';
 import { Box } from '../components/box/Box';
 import { Image } from '../components/image/Image';
 import { TextInput } from '../components/form/TextInput';
-import { loginUser } from '../store/userSlice';
+import { loginUser, getUser } from '../store/userSlice';
 import { Divider } from '../layout/Divider';
 
 const Container = styled.div`
@@ -87,9 +89,11 @@ const Landing: React.FC<Props> = (): JSX.Element => {
     });
   };
 
-  // if (isAuthenticated) {
-  //   return <Redirect to="/dashboard" />;
-  // }
+  const { isAuthenticated } = useSelector(getUser);
+
+  if (isAuthenticated) {
+    return <Redirect to="/dashboard" />;
+  }
 
   const onSubmit = (e) => {
     e.preventDefault();

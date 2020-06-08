@@ -1,11 +1,11 @@
-import axios from 'axios';
+import { client } from '../api/request';
 
 export const setAuthToken = (token: String) => {
   // check if token is true
   if (token) {
-    axios.defaults.headers.common['x-auth-token'] = token;
+    client.defaults.headers.common['x-auth-token'] = token;
   } else {
     // if false, remove axios header
-    delete axios.defaults.headers.common['x-auth-token'];
+    delete client.defaults.headers.common['x-auth-token'];
   }
 };

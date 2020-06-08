@@ -6,56 +6,13 @@ import { setAuthToken } from '../utils/setAuthToken';
 
 export const loadUser = createAsyncThunk('loadUser', async () => {
   try {
-    if (localStorage.token) {
-      setAuthToken(localStorage.token);
-    }
-
-    const res = await userAPI.get();
-    return res.user;
+    const data = await userAPI.get();
+    return data;
   } catch (error) {
     // create error handling
-    console.error(error);
-    return null;
+    throw new Error(error);
   }
 });
-
-// TODO: convert to normal thunk
-export const loginUser = createAsyncThunk('login', async (data: object) => {
-  try {
-    const config = {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      data,
-    };
-    const res = await userAPI.login(config);
-    return res.token;
-  } catch (error) {
-    // create error handling
-    console.error(error);
-    return null;
-  }
-});
-
-// TODO: convert to normal thunk
-export const registerUser = createAsyncThunk(
-  'register',
-  async (data: object) => {
-    try {
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        data,
-      };
-      const res = await userAPI.register(config);
-      return res.token;
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  }
-);
 
 const userInitialState = {
   user: null,
@@ -69,8 +26,18 @@ const userSlice = createSlice({
   initialState: userInitialState,
   reducers: {
     setUser: (state, action) => {
-      state.isAuthenticated = true;
       state.user = action.payload;
+    },
+    setToken: (state, action) => {
+      localStorage.setItem('token', action.payload);
+      setAuthToken(action.payload);
+      state.token = action.payload;
+    },
+    setFetching: (state, action) => {
+      state.isFetching = action.payload;
+    },
+    setAuthenticated: (state, action) => {
+      state.isAuthenticated = action.payload;
     },
     authFailed: (state, action) => {
       state.isAuthenticated = false;
@@ -84,44 +51,12 @@ const userSlice = createSlice({
     },
   },
   extraReducers: {
-    // Login reducers
-    [loginUser.fulfilled.toString()]: (state, action) => {
-      const { payload } = action;
-      state.isFetching = false;
-      state.isAuthenticated = true;
-      state.token = payload;
-    },
-    [loginUser.pending.toString()]: (state) => {
-      state.isFetching = true;
-    },
-    [loginUser.rejected.toString()]: (state) => {
-      state.isFetching = false;
-      state.user = null;
-      state.token = null;
-      state.isAuthenticated = false;
-    },
-    // Register reducers
-    [registerUser.fulfilled.toString()]: (state, action) => {
-      const { payload } = action;
-      state.isFetching = false;
-      state.isAuthenticated = true;
-      state.token = payload;
-    },
-    [registerUser.pending.toString()]: (state) => {
-      state.isFetching = true;
-    },
-    [registerUser.rejected.toString()]: (state) => {
-      state.isFetching = false;
-      state.user = null;
-      state.token = null;
-      state.isAuthenticated = false;
-    },
     // loadUser reducers
     [loadUser.fulfilled.toString()]: (state, action) => {
       const { payload } = action;
       state.isFetching = false;
       state.isAuthenticated = true;
-      state.token = payload;
+      state.user = payload;
     },
     [loadUser.pending.toString()]: (state) => {
       state.isFetching = true;
@@ -135,6 +70,51 @@ const userSlice = createSlice({
   },
 });
 
-export const { setUser, authFailed, logoutUser } = userSlice.actions;
+export const {
+  setUser,
+  authFailed,
+  logoutUser,
+  setFetching,
+  setAuthenticated,
+  setToken,
+} = userSlice.actions;
+
+export const loginUser = (formData: object) => async (dispatch) => {
+  try {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: formData,
+    };
+    const res = await userAPI.login(config);
+    dispatch(setToken(res.token));
+    return dispatch(loadUser());
+  } catch (error) {
+    // TODO: create error handling
+    console.error(error);
+    return null;
+  }
+};
+
+export const registerUser = (formData: object) => async (dispatch) => {
+  try {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: formData,
+    };
+    const res = await userAPI.register(config);
+    dispatch(setToken(res.token));
+    return dispatch(loadUser());
+  } catch (error) {
+    // TODO: create error handling
+    console.error(error);
+    return null;
+  }
+};
+
+export const getUser = (state) => state.user;
 
 export default userSlice.reducer;
