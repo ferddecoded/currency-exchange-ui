@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
+import { useSelector, useDispatch } from 'react-redux';
 import AppWrapper from '../layout/AppWrapper';
 import { H1, H3, H4 } from '../components/typography/Heading';
 import { Icon } from '../components/typography/Icon';
 import { TextInput } from '../components/form/TextInput';
 import { Box } from '../components/box/Box';
+import { fetchCurrencies, getDataCurrencies } from '../store/dataSlice';
 
 const HeadingContainer = styled.div`
   box-shadow: ${({ theme }) => theme.mediumBS};
@@ -79,16 +81,23 @@ const LabelContainer = styled(Box)`
 
 const Dashboard: React.FC<Props> = (): JSX.Element => {
   const [currencyPick, setCurrencyPick] = useState('CAD');
-  const [currencies, setCurrencies] = useState([]);
+  const [currencies, setCurrencies] = useState(null);
   const [convertAmount, setConverAmount] = useState(0);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchedCurrencies = [
       { value: 'EUR', label: 'Euro' },
-      { value: 'CAD', label: 'Canaddian' },
+      { value: 'CAD', label: 'Canadian' },
     ];
     setCurrencies(fetchedCurrencies);
   }, []);
+
+  useEffect(() => {
+    if (!currencies) {
+      dispatch(fetchCurrencies());
+    }
+  }, [dispatch, currencies]);
 
   const onCurrencyChange = ({ target }) => {
     setCurrencyPick(target.value);
@@ -104,6 +113,10 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
       </option>
     ));
   };
+
+  const curr = useSelector(getDataCurrencies);
+
+  console.log({ curr });
 
   return (
     <AppWrapper>
@@ -125,7 +138,7 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
             id="currency-picker"
             onChange={onCurrencyChange}
           >
-            {renderOptions(currencies)}
+            {currencies && currencies.length && renderOptions(currencies)}
           </select>
         </CustomSelect>
       </InputContainer>

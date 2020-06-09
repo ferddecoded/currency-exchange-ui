@@ -12,7 +12,14 @@ const currencyData = () =>
     method: 'GET',
   });
 
+const news = (currency) =>
+  request({
+    url: `/api/news/${currency}`,
+    method: 'GET',
+  });
+
 export default {
   exchangeRate,
   currencyData,
+  news,
 };
