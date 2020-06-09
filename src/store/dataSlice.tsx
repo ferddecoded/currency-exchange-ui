@@ -40,11 +40,14 @@ export const fetchCurrencies = () => async (dispatch) => {
 
     // create async function to fetch news data for each currency
     const getCurrenciesWithNews = async (currs) => {
+      // this returns an array of promises
       const currencyPromises = currs.map(async (currency) => {
         const { articles } = await dataApi.news(currency.abbreviation);
         return {
           ...currency,
-          new: articles,
+          label: currency.name,
+          value: currency.abbreviation,
+          news: articles,
         };
       });
 

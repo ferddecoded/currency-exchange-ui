@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-
 import { useSelector, useDispatch } from 'react-redux';
+
+import { fetchCurrencies, getDataCurrencies } from '../store/dataSlice';
 import AppWrapper from '../layout/AppWrapper';
 import { H1, H3, H4 } from '../components/typography/Heading';
 import { Icon } from '../components/typography/Icon';
 import { TextInput } from '../components/form/TextInput';
 import { Box } from '../components/box/Box';
-import { fetchCurrencies, getDataCurrencies } from '../store/dataSlice';
+import { Image } from '../components/image/Image';
+import { Grid } from '../components/grid/Grid';
+import { Copy } from '../components/typography/Copy';
 
 const HeadingContainer = styled.div`
   box-shadow: ${({ theme }) => theme.mediumBS};
@@ -27,7 +30,8 @@ const InputContainer = styled.div`
 `;
 
 const CustomSelect = styled.div`
-  width: 300px;
+  cursor: pointer;
+  width: 280px;
   padding: 8px 16px;
   border: 1px solid ${({ theme }) => theme.lightgrey};
   border-radius: 5px;
@@ -38,29 +42,30 @@ const CustomSelect = styled.div`
   &:hover {
     box-shadow: 0 0 5px ${({ theme }) => theme.lightgrey};
   }
-  .custom-select-value {
-    font-family: helvetica;
-    font-size: 20px;
-    line-height: 40px;
-    color: ${({ theme }) => theme.lightgrey};
-    box-sizing: border-box;
-    padding: 0 10px;
-  }
-  select {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    opacity: 0;
-    display: block;
-    border: 1px solid ${({ theme }) => theme.lightgrey};
-  }
 `;
 
 const FlexContainer = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+`;
+
+const SelectText = styled(Copy)`
+  font-size: 20px;
+  line-height: 40px;
+  color: ${({ theme }) => theme.lightgrey};
+  box-sizing: border-box;
+  padding: 0 10px;
+`;
+
+const Select = styled('select')`
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  opacity: 0;
+  display: block;
+  border: 1px solid ${({ theme }) => theme.lightgrey};
 `;
 
 const SelectedContainer = styled.div`
@@ -79,28 +84,23 @@ const LabelContainer = styled(Box)`
   flex-basis: 50%;
 `;
 
+const ImageContainer = styled(Box)`
+  width: 20%;
+  margin: 24px auto;
+
+  @media (max-width: 768px) {
+    width: 50%;
+  }
+`;
+
 const Dashboard: React.FC<Props> = (): JSX.Element => {
-  const [currencyPick, setCurrencyPick] = useState('CAD');
-  const [currencies, setCurrencies] = useState(null);
-  const [convertAmount, setConverAmount] = useState(0);
+  const [currencies, setCurrencies] = useState<CurrencyModel[] | null>(null);
+  const [convertAmount, setConverAmount] = useState<number>(0);
+  const [currencyPick, setCurrencyPick] = useState<CurrencyModel | null>(null);
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    const fetchedCurrencies = [
-      { value: 'EUR', label: 'Euro' },
-      { value: 'CAD', label: 'Canadian' },
-    ];
-    setCurrencies(fetchedCurrencies);
-  }, []);
-
-  useEffect(() => {
-    if (!currencies) {
-      dispatch(fetchCurrencies());
-    }
-  }, [dispatch, currencies]);
-
   const onCurrencyChange = ({ target }) => {
-    setCurrencyPick(target.value);
+    setCurrencyPick(currencies.find((curr) => curr.value === target.value));
   };
 
   const renderOptions = (options) => {
@@ -114,53 +114,89 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
     ));
   };
 
-  const curr = useSelector(getDataCurrencies);
+  const { currencies: stateCurrencies } = useSelector(getDataCurrencies);
 
-  console.log({ curr });
+  useEffect(() => {
+    if (!currencies) {
+      dispatch(fetchCurrencies());
+    }
+  }, [dispatch, currencies]);
+
+  useEffect(() => {
+    if (stateCurrencies.length) {
+      setCurrencyPick(stateCurrencies.find((curr) => curr.value === 'CAD'));
+      setCurrencies(stateCurrencies);
+    }
+  }, [stateCurrencies]);
+
+  if (!currencies) {
+    return null;
+  }
 
   return (
     <AppWrapper>
-      <HeadingContainer>
-        <H1>Currencies</H1>
-      </HeadingContainer>
-      <InputContainer>
-        <H3>Select Your Currency</H3>
-        <CustomSelect>
+      <Grid>
+        <HeadingContainer>
+          <H1>Currencies</H1>
+        </HeadingContainer>
+        <InputContainer>
+          <H3>Select Your Currency</H3>
+          <CustomSelect>
+            <FlexContainer>
+              <SelectText>
+                {currencyPick?.value || 'Select Currency'}
+              </SelectText>
+              <Icon className="fas fa-angle-down" fontSize="20px" />
+            </FlexContainer>
+            <Select
+              value={currencyPick?.value}
+              name="currency-picker"
+              id="currency-picker"
+              onChange={onCurrencyChange}
+            >
+              {currencies && currencies.length && renderOptions(currencies)}
+            </Select>
+          </CustomSelect>
+        </InputContainer>
+        <SelectedContainer>
+          <ImageContainer>
+            <Image src={currencyPick?.flagURL} alt={currencyPick.name} />
+          </ImageContainer>
           <FlexContainer>
-            <div className="custom-select-value">
-              {currencyPick || 'Select Currency'}
-            </div>
-            <Icon className="fas fa-angle-down" fontSize="20px" />
+            <LabelContainer>
+              <H4>
+                Enter Amount: {currencyPick?.abbreviation}{' '}
+                {currencyPick?.symbol}
+              </H4>
+            </LabelContainer>
+            <ConvertAmountContainer>
+              <TextInput
+                type="number"
+                id="convertAmount"
+                value={convertAmount}
+                onChange={(e) => setConverAmount(e.target.value)}
+              />
+            </ConvertAmountContainer>
           </FlexContainer>
-          <select
-            value={currencyPick}
-            name="currency-picker"
-            id="currency-picker"
-            onChange={onCurrencyChange}
-          >
-            {currencies && currencies.length && renderOptions(currencies)}
-          </select>
-        </CustomSelect>
-      </InputContainer>
-      <SelectedContainer>
-        <FlexContainer>
-          <LabelContainer>
-            <H4>Enter Amount</H4>
-          </LabelContainer>
-          <ConvertAmountContainer>
-            <TextInput
-              type="number"
-              id="convertAmount"
-              value={convertAmount}
-              onChange={(e) => setConverAmount(e.target.value)}
-            />
-          </ConvertAmountContainer>
-        </FlexContainer>
-      </SelectedContainer>
+        </SelectedContainer>
+      </Grid>
     </AppWrapper>
   );
 };
 
 interface Props {}
+
+interface CurrencyModel {
+  value: string;
+  name?: string;
+  abbreviation?: string;
+  symbol?: string;
+  flagURL?: string;
+  label?: string;
+  news?: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [attribute: string]: any;
+  }[];
+}
 
 export default Dashboard;
