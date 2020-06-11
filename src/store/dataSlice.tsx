@@ -7,6 +7,7 @@ const dataInitialState = {
   currencies: [],
   rates: null,
   isFetching: null,
+  news: null,
 };
 
 const dataSlice = createSlice({
@@ -19,18 +20,36 @@ const dataSlice = createSlice({
     setRates: (state, action) => {
       state.rates = action.payload;
     },
+    setNews: (state, action) => {
+      state.news = action.payload;
+    },
     setFetching: (state, action) => {
       state.isFetching = action.payload;
     },
   },
 });
 
-export const { setCurrencies, setRates, setFetching } = dataSlice.actions;
+export const {
+  setCurrencies,
+  setRates,
+  setFetching,
+  setNews,
+} = dataSlice.actions;
 
 export const fetchRates = (currency) => async (dispatch) => {
   try {
     const rates = await dataApi.exchangeRate(currency);
     return dispatch(setRates(rates));
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
+export const fetchNews = (currency) => async (dispatch) => {
+  try {
+    const news = await dataApi.news(currency);
+    return dispatch(setNews(news));
   } catch (error) {
     console.error(error);
     return null;
@@ -43,25 +62,11 @@ export const fetchCurrencies = () => async (dispatch) => {
     dispatch(setFetching(true));
     const currencies = await dataApi.currencyData();
 
-    // create async function to fetch news data for each currency
-    const getCurrenciesWithNews = async (currs) => {
-      // this returns an array of promises
-      const currencyPromises = currs.map(async (currency) => {
-        const { articles } = await dataApi.news(currency.abbreviation);
-        return {
-          ...currency,
-          label: currency.name,
-          value: currency.abbreviation,
-          news: articles,
-        };
-      });
-
-      // use Promise.all to fetch and wait for news data to be fetched
-      const currenciesWithNews = await Promise.all(currencyPromises);
-      return currenciesWithNews;
-    };
-
-    const formattedCurrencies = await getCurrenciesWithNews(currencies);
+    const formattedCurrencies = currencies.map((currency) => ({
+      ...currency,
+      label: currency.name,
+      value: currency.abbreviation,
+    }));
     dispatch(setFetching(false));
     return dispatch(setCurrencies(formattedCurrencies));
   } catch (error) {

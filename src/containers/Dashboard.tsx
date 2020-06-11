@@ -1,10 +1,16 @@
+/* eslint-disable no-nested-ternary */
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 
-import { fetchCurrencies, getDataCurrencies } from '../store/dataSlice';
+import {
+  fetchCurrencies,
+  getDataCurrencies,
+  fetchNews,
+  fetchRates,
+} from '../store/dataSlice';
 import AppWrapper from '../layout/AppWrapper';
-import { H1, H3, H4, H5 } from '../components/typography/Heading';
+import { H1, H2, H3, H4, H5 } from '../components/typography/Heading';
 import { Icon } from '../components/typography/Icon';
 import { TextInput } from '../components/form/TextInput';
 import { Box } from '../components/box/Box';
@@ -12,6 +18,7 @@ import { Image } from '../components/image/Image';
 import { Grid } from '../components/grid/Grid';
 import { Copy } from '../components/typography/Copy';
 import Loading from '../layout/Loading';
+import { Button } from '../components/button/Button';
 
 const HeadingContainer = styled.div`
   box-shadow: ${({ theme }) => theme.mediumBS};
@@ -107,12 +114,26 @@ const NewsContainer = styled(Box)`
   width: calc(100% - 64px);
   border-radius: 5px;
   padding: 16px;
+  transition: all 0.4s;
+  box-shadow: 0 0 0px #e1e1e1;
+
+  &:hover {
+    box-shadow: 0 0 5px #e1e1e1;
+  }
 `;
+
+const NewsCopy = styled(Copy)`
+  text-overflow: ellipsis;
+  color: ${({ theme }) => theme.lightgrey};
+`;
+
+const StyledGrid = styled(Grid)``;
 
 const Dashboard: React.FC<Props> = (): JSX.Element => {
   const [currencies, setCurrencies] = useState<CurrencyModel[] | null>(null);
   const [convertAmount, setConverAmount] = useState<number>();
   const [currencyPick, setCurrencyPick] = useState<CurrencyModel | null>(null);
+  const [showHeadlines, setShowHeadlines] = useState(false);
   const dispatch = useDispatch();
 
   const onCurrencyChange = ({ target }) => {
@@ -133,15 +154,21 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
   const renderNews = (headlines) => {
     return headlines.map((headline, index) => {
       return (
-        <NewsContainer key={index.toString()}>
-          <H5>{headline?.title}</H5>
-          <Copy>{headline?.description}</Copy>
-        </NewsContainer>
+        <a
+          href={headline.url}
+          aria-label="link to news article"
+          key={index.toString()}
+        >
+          <NewsContainer>
+            <H5 color="#2d2d37">{headline?.name}</H5>
+            <NewsCopy>{headline?.description}</NewsCopy>
+          </NewsContainer>
+        </a>
       );
     });
   };
 
-  const { currencies: stateCurrencies, isFetching } = useSelector(
+  const { currencies: stateCurrencies, isFetching, news, rates } = useSelector(
     getDataCurrencies
   );
 
@@ -157,6 +184,14 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
       setCurrencies(stateCurrencies);
     }
   }, [stateCurrencies]);
+
+  useEffect(() => {
+    if (currencyPick?.abbreviation) {
+      const { abbreviation } = currencyPick;
+      dispatch(fetchRates(abbreviation));
+      dispatch(fetchNews(abbreviation));
+    }
+  }, [currencyPick?.abbreviation]);
 
   if (isFetching) {
     return <Loading />;
@@ -210,10 +245,17 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
                   />
                 </ConvertAmountContainer>
               </FlexContainer>
-              <H3>Recent Headlines</H3>
-              <Grid>
-                {currencyPick?.news?.length && renderNews(currencyPick.news)}
-              </Grid>
+              <H2>Recent Headlines</H2>
+              <StyledGrid>
+                {showHeadlines
+                  ? news?.length
+                    ? renderNews(news)
+                    : 'No headlines at the moment.'
+                  : null}
+              </StyledGrid>
+              <Button primary onClick={() => setShowHeadlines(!showHeadlines)}>
+                {showHeadlines ? 'Hide Headlines' : 'Show Headlines'}
+              </Button>
             </>
           )}
         </SelectedContainer>
