@@ -65,9 +65,17 @@ export const TextInput: React.FC<Props> = ({
   value,
   onChange,
   type,
+  placeholder,
 }) => (
   <Container>
-    <Input type={type} id={id} onChange={onChange} value={value} name={id} />
+    <Input
+      type={type}
+      id={id}
+      onChange={onChange}
+      value={value}
+      name={id}
+      placeholder={placeholder}
+    />
     {label && <Label htmlFor={id}>{label}</Label>}
   </Container>
 );
@@ -78,4 +86,5 @@ interface Props {
   value: string | number;
   onChange: (e) => void;
   type: string;
+  placeholder?: string;
 }

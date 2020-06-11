@@ -6,6 +6,7 @@ import dataApi from '../api/dataApi';
 const dataInitialState = {
   currencies: [],
   rates: null,
+  isFetching: null,
 };
 
 const dataSlice = createSlice({
@@ -18,10 +19,13 @@ const dataSlice = createSlice({
     setRates: (state, action) => {
       state.rates = action.payload;
     },
+    setFetching: (state, action) => {
+      state.isFetching = action.payload;
+    },
   },
 });
 
-export const { setCurrencies, setRates } = dataSlice.actions;
+export const { setCurrencies, setRates, setFetching } = dataSlice.actions;
 
 export const fetchRates = (currency) => async (dispatch) => {
   try {
@@ -36,6 +40,7 @@ export const fetchRates = (currency) => async (dispatch) => {
 export const fetchCurrencies = () => async (dispatch) => {
   try {
     // fetch currencies
+    dispatch(setFetching(true));
     const currencies = await dataApi.currencyData();
 
     // create async function to fetch news data for each currency
@@ -57,6 +62,7 @@ export const fetchCurrencies = () => async (dispatch) => {
     };
 
     const formattedCurrencies = await getCurrenciesWithNews(currencies);
+    dispatch(setFetching(false));
     return dispatch(setCurrencies(formattedCurrencies));
   } catch (error) {
     console.error(error);
@@ -64,6 +70,7 @@ export const fetchCurrencies = () => async (dispatch) => {
   }
 };
 
+// selectors
 export const getDataCurrencies = (state) => state.data;
 
 export default dataSlice.reducer;

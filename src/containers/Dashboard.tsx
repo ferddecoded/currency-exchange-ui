@@ -4,13 +4,14 @@ import { useSelector, useDispatch } from 'react-redux';
 
 import { fetchCurrencies, getDataCurrencies } from '../store/dataSlice';
 import AppWrapper from '../layout/AppWrapper';
-import { H1, H3, H4 } from '../components/typography/Heading';
+import { H1, H3, H4, H5 } from '../components/typography/Heading';
 import { Icon } from '../components/typography/Icon';
 import { TextInput } from '../components/form/TextInput';
 import { Box } from '../components/box/Box';
 import { Image } from '../components/image/Image';
 import { Grid } from '../components/grid/Grid';
 import { Copy } from '../components/typography/Copy';
+import Loading from '../layout/Loading';
 
 const HeadingContainer = styled.div`
   box-shadow: ${({ theme }) => theme.mediumBS};
@@ -70,7 +71,7 @@ const Select = styled('select')`
 
 const SelectedContainer = styled.div`
   background-color: ${({ theme }) => theme.darkPurple};
-  height: 350px;
+  min-height: 350px;
   border-radius: 5px;
   border: 5px solid ${({ theme }) => theme.primaryNavy};
   padding: 16px 0px;
@@ -93,9 +94,24 @@ const ImageContainer = styled(Box)`
   }
 `;
 
+const UserCurrenciesContainer = styled(Box)`
+  margin: 48px auto;
+  background-color: #222;
+  width: 100%;
+  min-height: 200px;
+`;
+
+const NewsContainer = styled(Box)`
+  background-color: ${({ theme }) => theme.primaryNavy};
+  margin: 16px 32px;
+  width: calc(100% - 64px);
+  border-radius: 5px;
+  padding: 16px;
+`;
+
 const Dashboard: React.FC<Props> = (): JSX.Element => {
   const [currencies, setCurrencies] = useState<CurrencyModel[] | null>(null);
-  const [convertAmount, setConverAmount] = useState<number>(0);
+  const [convertAmount, setConverAmount] = useState<number>();
   const [currencyPick, setCurrencyPick] = useState<CurrencyModel | null>(null);
   const dispatch = useDispatch();
 
@@ -114,7 +130,20 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
     ));
   };
 
-  const { currencies: stateCurrencies } = useSelector(getDataCurrencies);
+  const renderNews = (headlines) => {
+    return headlines.map((headline, index) => {
+      return (
+        <NewsContainer key={index.toString()}>
+          <H5>{headline?.title}</H5>
+          <Copy>{headline?.description}</Copy>
+        </NewsContainer>
+      );
+    });
+  };
+
+  const { currencies: stateCurrencies, isFetching } = useSelector(
+    getDataCurrencies
+  );
 
   useEffect(() => {
     if (!currencies) {
@@ -129,8 +158,8 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
     }
   }, [stateCurrencies]);
 
-  if (!currencies) {
-    return null;
+  if (isFetching) {
+    return <Loading />;
   }
 
   return (
@@ -159,26 +188,36 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
           </CustomSelect>
         </InputContainer>
         <SelectedContainer>
-          <ImageContainer>
-            <Image src={currencyPick?.flagURL} alt={currencyPick.name} />
-          </ImageContainer>
-          <FlexContainer>
-            <LabelContainer>
-              <H4>
-                Enter Amount: {currencyPick?.abbreviation}{' '}
-                {currencyPick?.symbol}
-              </H4>
-            </LabelContainer>
-            <ConvertAmountContainer>
-              <TextInput
-                type="number"
-                id="convertAmount"
-                value={convertAmount}
-                onChange={(e) => setConverAmount(e.target.value)}
-              />
-            </ConvertAmountContainer>
-          </FlexContainer>
+          {currencyPick && (
+            <>
+              <ImageContainer>
+                <Image src={currencyPick?.flagURL} alt={currencyPick.name} />
+              </ImageContainer>
+              <FlexContainer>
+                <LabelContainer>
+                  <H4>
+                    Enter Amount: {currencyPick?.abbreviation}{' '}
+                    {currencyPick?.symbol}
+                  </H4>
+                </LabelContainer>
+                <ConvertAmountContainer>
+                  <TextInput
+                    type="number"
+                    id="convertAmount"
+                    value={convertAmount}
+                    onChange={(e) => setConverAmount(e.target.value)}
+                    placeholder="0.00"
+                  />
+                </ConvertAmountContainer>
+              </FlexContainer>
+              <H3>Recent Headlines</H3>
+              <Grid>
+                {currencyPick?.news?.length && renderNews(currencyPick.news)}
+              </Grid>
+            </>
+          )}
         </SelectedContainer>
+        <UserCurrenciesContainer>User Currencies</UserCurrenciesContainer>
       </Grid>
     </AppWrapper>
   );
