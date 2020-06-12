@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { ThemeProvider, createGlobalStyle } from 'styled-components';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector, Provider } from 'react-redux';
 
 import Landing from './containers/Landing';
 import AppContainer from './layout/AppContainer';
 import theme from './theme';
 import AppWrapper from './layout/AppWrapper';
 import store from './store';
-import { Provider } from 'react-redux';
+
 import { setAuthToken } from './utils/setAuthToken';
 import { loadUser } from './store/userSlice';
 import Dashboard from './containers/Dashboard';
@@ -29,6 +29,7 @@ const GlobalStyle = createGlobalStyle`
     font-size: 1.5rem;
     line-height: 1.6;
     color: ${({ theme }) => theme.lightgrey};
+    position: relative;
   }
   a {
     text-decoration: none;

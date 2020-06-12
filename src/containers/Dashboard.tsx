@@ -9,6 +9,7 @@ import {
   fetchNews,
   fetchRates,
 } from '../store/dataSlice';
+
 import AppWrapper from '../layout/AppWrapper';
 import { H1, H2, H3, H4, H5 } from '../components/typography/Heading';
 import { Icon } from '../components/typography/Icon';
@@ -19,6 +20,8 @@ import { Grid } from '../components/grid/Grid';
 import { Copy } from '../components/typography/Copy';
 import Loading from '../layout/Loading';
 import { Button } from '../components/button/Button';
+import { CurrencyModel } from '../models/CurrencyModel';
+import Select from '../components/form/Select';
 
 const HeadingContainer = styled.div`
   box-shadow: ${({ theme }) => theme.mediumBS};
@@ -37,50 +40,16 @@ const InputContainer = styled.div`
   align-items: center;
 `;
 
-const CustomSelect = styled.div`
-  cursor: pointer;
-  width: 280px;
-  padding: 8px 16px;
-  border: 1px solid ${({ theme }) => theme.lightgrey};
-  border-radius: 5px;
-  position: relative;
-  box-shadow: 0 0 0px ${({ theme }) => theme.lightgrey};
-  transition: ${({ theme }) => theme.defaultTransition};
-  background-color: ${({ theme }) => theme.darkPurple};
-  &:hover {
-    box-shadow: 0 0 5px ${({ theme }) => theme.lightgrey};
-  }
-`;
-
 const FlexContainer = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
 `;
 
-const SelectText = styled(Copy)`
-  font-size: 20px;
-  line-height: 40px;
-  color: ${({ theme }) => theme.lightgrey};
-  box-sizing: border-box;
-  padding: 0 10px;
-`;
-
-const Select = styled('select')`
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  opacity: 0;
-  display: block;
-  border: 1px solid ${({ theme }) => theme.lightgrey};
-`;
-
 const SelectedContainer = styled.div`
   background-color: ${({ theme }) => theme.darkPurple};
   min-height: 350px;
   border-radius: 5px;
-  border: 5px solid ${({ theme }) => theme.primaryNavy};
   padding: 16px 0px;
 `;
 
@@ -129,26 +98,50 @@ const NewsCopy = styled(Copy)`
 
 const StyledGrid = styled(Grid)``;
 
+const ModalOverlay = styled.div`
+  height: 100%;
+  width: 100%;
+  background-color: ${({ theme }) => theme.opaqueBlack};
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 999;
+`;
+
+const ModalContainer = styled.div`
+  position: absolute;
+  width: 33.33%;
+  right: 0;
+  top: 0;
+  height: 100%;
+  background-color: ${({ theme }) => theme.lightgrey};
+  overflow: scroll;
+`;
+
+const Modal = styled.div`
+  margin: 96px 48px 48px;
+  width: calc(100% - 96px);
+  height: calc(100% - 96px);
+  color: ${({ theme }) => theme.darkPurple};
+  position: relative;
+`;
+
+const ModalButton = styled(Button)`
+  position: absolute;
+  top: 0;
+  right: 0;
+`;
+
 const Dashboard: React.FC<Props> = (): JSX.Element => {
   const [currencies, setCurrencies] = useState<CurrencyModel[] | null>(null);
   const [convertAmount, setConverAmount] = useState<number>();
   const [currencyPick, setCurrencyPick] = useState<CurrencyModel | null>(null);
   const [showHeadlines, setShowHeadlines] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const dispatch = useDispatch();
 
   const onCurrencyChange = ({ target }) => {
     setCurrencyPick(currencies.find((curr) => curr.value === target.value));
-  };
-
-  const renderOptions = (options) => {
-    if (!options.length) {
-      return null;
-    }
-    return options.map((currency) => (
-      <option key={currency.value} value={currency.value}>
-        {currency.label}
-      </option>
-    ));
   };
 
   const renderNews = (headlines) => {
@@ -198,86 +191,80 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
   }
 
   return (
-    <AppWrapper>
-      <Grid>
-        <HeadingContainer>
-          <H1>Currencies</H1>
-        </HeadingContainer>
-        <InputContainer>
-          <H3>Select Your Currency</H3>
-          <CustomSelect>
-            <FlexContainer>
-              <SelectText>
-                {currencyPick?.value || 'Select Currency'}
-              </SelectText>
-              <Icon className="fas fa-angle-down" fontSize="20px" />
-            </FlexContainer>
+    <>
+      <AppWrapper>
+        <Grid>
+          <HeadingContainer>
+            <H1>Currencies</H1>
+          </HeadingContainer>
+          <InputContainer>
+            <H3>Select Your Currency</H3>
             <Select
-              value={currencyPick?.value}
-              name="currency-picker"
-              id="currency-picker"
+              selectItem={currencyPick}
+              options={currencies}
               onChange={onCurrencyChange}
-            >
-              {currencies && currencies.length && renderOptions(currencies)}
-            </Select>
-          </CustomSelect>
-        </InputContainer>
-        <SelectedContainer>
-          {currencyPick && (
-            <>
-              <ImageContainer>
-                <Image src={currencyPick?.flagURL} alt={currencyPick.name} />
-              </ImageContainer>
-              <FlexContainer>
-                <LabelContainer>
-                  <H4>
-                    Enter Amount: {currencyPick?.abbreviation}{' '}
-                    {currencyPick?.symbol}
-                  </H4>
-                </LabelContainer>
-                <ConvertAmountContainer>
-                  <TextInput
-                    type="number"
-                    id="convertAmount"
-                    value={convertAmount}
-                    onChange={(e) => setConverAmount(e.target.value)}
-                    placeholder="0.00"
-                  />
-                </ConvertAmountContainer>
-              </FlexContainer>
-              <H2>Recent Headlines</H2>
-              <StyledGrid>
-                {showHeadlines
-                  ? news?.length
-                    ? renderNews(news)
-                    : 'No headlines at the moment.'
-                  : null}
-              </StyledGrid>
-              <Button primary onClick={() => setShowHeadlines(!showHeadlines)}>
-                {showHeadlines ? 'Hide Headlines' : 'Show Headlines'}
-              </Button>
-            </>
-          )}
-        </SelectedContainer>
-        <UserCurrenciesContainer>User Currencies</UserCurrenciesContainer>
-      </Grid>
-    </AppWrapper>
+            />
+          </InputContainer>
+          <SelectedContainer>
+            {currencyPick && (
+              <>
+                <ImageContainer>
+                  <Image src={currencyPick?.flagURL} alt={currencyPick.name} />
+                </ImageContainer>
+                <FlexContainer>
+                  <LabelContainer>
+                    <H4>
+                      Enter Amount: {currencyPick?.abbreviation}{' '}
+                      {currencyPick?.symbol}
+                    </H4>
+                  </LabelContainer>
+                  <ConvertAmountContainer>
+                    <TextInput
+                      type="number"
+                      id="convertAmount"
+                      value={convertAmount}
+                      onChange={(e) => setConverAmount(e.target.value)}
+                      placeholder="0.00"
+                    />
+                  </ConvertAmountContainer>
+                </FlexContainer>
+                <H2>Recent Headlines</H2>
+                <StyledGrid>
+                  {showHeadlines
+                    ? news?.length
+                      ? renderNews(news)
+                      : 'No headlines at the moment.'
+                    : null}
+                </StyledGrid>
+                <Button
+                  primary
+                  onClick={() => setShowHeadlines(!showHeadlines)}
+                >
+                  {showHeadlines ? 'Hide Headlines' : 'Show Headlines'}
+                </Button>
+              </>
+            )}
+          </SelectedContainer>
+          <UserCurrenciesContainer>User Currencies</UserCurrenciesContainer>
+          <Button primary onClick={() => setShowModal(true)}>
+            Add Currency
+          </Button>
+        </Grid>
+      </AppWrapper>
+      {showModal && (
+        <ModalOverlay>
+          <ModalContainer>
+            <ModalButton onClick={() => setShowModal(false)}>
+              <Icon className="fas fa-times" fontSize="20px" />
+            </ModalButton>
+            <Modal>Hi</Modal>
+          </ModalContainer>
+        </ModalOverlay>
+      )}
+    </>
   );
 };
 
 interface Props {}
-
-interface CurrencyModel {
-  value: string;
-  name?: string;
-  abbreviation?: string;
-  symbol?: string;
-  flagURL?: string;
-  label?: string;
-  news?: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [attribute: string]: any;
-  }[];
-}
 
 export default Dashboard;
