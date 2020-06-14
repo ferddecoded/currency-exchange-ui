@@ -132,6 +132,27 @@ const ModalButton = styled(Button)`
   right: 0;
 `;
 
+const CurrencyList = styled.ul`
+  list-style: none;
+  padding: 0;
+`;
+
+const CurrencyItem = styled.li`
+  padding: 24px 0px;
+  border-top: 1px solid ${({ theme }) => theme.darkGrey};
+  cursor: pointer;
+  &:hover {
+    background-color: #ddd;
+  }
+`;
+
+const ModalImage = styled.div`
+  flex-basis: 48px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+`;
+
 const Dashboard: React.FC<Props> = (): JSX.Element => {
   const [currencies, setCurrencies] = useState<CurrencyModel[] | null>(null);
   const [convertAmount, setConverAmount] = useState<number>();
@@ -257,7 +278,25 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
             <ModalButton onClick={() => setShowModal(false)}>
               <Icon className="fas fa-times" fontSize="20px" />
             </ModalButton>
-            <Modal>Hi</Modal>
+            <Modal>
+              <CurrencyList>
+                {currencies.map((currency) => (
+                  <CurrencyItem>
+                    <FlexContainer>
+                      <ModalImage>
+                        <Image
+                          src={currency.flagURL}
+                          alt={currency.abbreviation}
+                        />
+                      </ModalImage>
+                      <Box>
+                        <Copy>{currency.name}</Copy>
+                      </Box>
+                    </FlexContainer>
+                  </CurrencyItem>
+                ))}
+              </CurrencyList>
+            </Modal>
           </ModalContainer>
         </ModalOverlay>
       )}
