@@ -12,7 +12,6 @@ import {
 
 import AppWrapper from '../layout/AppWrapper';
 import { H1, H2, H3, H4, H5 } from '../components/typography/Heading';
-import { Icon } from '../components/typography/Icon';
 import { TextInput } from '../components/form/TextInput';
 import { Box } from '../components/box/Box';
 import { Image } from '../components/image/Image';
@@ -22,6 +21,7 @@ import Loading from '../layout/Loading';
 import { Button } from '../components/button/Button';
 import { CurrencyModel } from '../models/CurrencyModel';
 import Select from '../components/form/Select';
+import Modal from '../components/modal/Modal';
 
 const HeadingContainer = styled.div`
   box-shadow: ${({ theme }) => theme.mediumBS};
@@ -97,40 +97,6 @@ const NewsCopy = styled(Copy)`
 `;
 
 const StyledGrid = styled(Grid)``;
-
-const ModalOverlay = styled.div`
-  height: 100%;
-  width: 100%;
-  background-color: ${({ theme }) => theme.opaqueBlack};
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 999;
-`;
-
-const ModalContainer = styled.div`
-  position: absolute;
-  width: 33.33%;
-  right: 0;
-  top: 0;
-  height: 100%;
-  background-color: ${({ theme }) => theme.lightgrey};
-  overflow: scroll;
-`;
-
-const Modal = styled.div`
-  margin: 96px 48px 48px;
-  width: calc(100% - 96px);
-  height: calc(100% - 96px);
-  color: ${({ theme }) => theme.darkPurple};
-  position: relative;
-`;
-
-const ModalButton = styled(Button)`
-  position: absolute;
-  top: 0;
-  right: 0;
-`;
 
 const CurrencyList = styled.ul`
   list-style: none;
@@ -273,32 +239,22 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
         </Grid>
       </AppWrapper>
       {showModal && (
-        <ModalOverlay>
-          <ModalContainer>
-            <ModalButton onClick={() => setShowModal(false)}>
-              <Icon className="fas fa-times" fontSize="20px" />
-            </ModalButton>
-            <Modal>
-              <CurrencyList>
-                {currencies.map((currency) => (
-                  <CurrencyItem>
-                    <FlexContainer>
-                      <ModalImage>
-                        <Image
-                          src={currency.flagURL}
-                          alt={currency.abbreviation}
-                        />
-                      </ModalImage>
-                      <Box>
-                        <Copy>{currency.name}</Copy>
-                      </Box>
-                    </FlexContainer>
-                  </CurrencyItem>
-                ))}
-              </CurrencyList>
-            </Modal>
-          </ModalContainer>
-        </ModalOverlay>
+        <Modal onClick={() => setShowModal(false)}>
+          <CurrencyList>
+            {currencies.map(({ flagURL, abbreviation, name }) => (
+              <CurrencyItem>
+                <FlexContainer>
+                  <ModalImage>
+                    <Image src={flagURL} alt={abbreviation} />
+                  </ModalImage>
+                  <Box>
+                    <Copy>{name}</Copy>
+                  </Box>
+                </FlexContainer>
+              </CurrencyItem>
+            ))}
+          </CurrencyList>
+        </Modal>
       )}
     </>
   );
