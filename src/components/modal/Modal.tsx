@@ -22,6 +22,10 @@ const ModalContainer = styled.div`
   height: 100%;
   background-color: ${({ theme }) => theme.lightgrey};
   overflow: scroll;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 const ModalWrapper = styled.div`

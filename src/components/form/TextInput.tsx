@@ -66,6 +66,7 @@ export const TextInput: React.FC<Props> = ({
   onChange,
   type,
   placeholder,
+  disabled,
 }) => (
   <Container>
     <Input
@@ -75,6 +76,7 @@ export const TextInput: React.FC<Props> = ({
       value={value}
       name={id}
       placeholder={placeholder}
+      disabled={disabled}
     />
     {label && <Label htmlFor={id}>{label}</Label>}
   </Container>
@@ -87,4 +89,5 @@ interface Props {
   onChange: (e) => void;
   type: string;
   placeholder?: string;
+  disabled?: boolean;
 }

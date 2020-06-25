@@ -1,6 +1,6 @@
 /* eslint-disable no-nested-ternary */
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 
 import {
@@ -11,7 +11,7 @@ import {
 } from '../store/dataSlice';
 
 import AppWrapper from '../layout/AppWrapper';
-import { H1, H2, H3, H4, H5 } from '../components/typography/Heading';
+import { H1, H2, H3, H4, H5, H6 } from '../components/typography/Heading';
 import { TextInput } from '../components/form/TextInput';
 import { Box } from '../components/box/Box';
 import { Image } from '../components/image/Image';
@@ -22,6 +22,7 @@ import { Button } from '../components/button/Button';
 import { CurrencyModel } from '../models/CurrencyModel';
 import Select from '../components/form/Select';
 import Modal from '../components/modal/Modal';
+import { Icon } from '../components/typography/Icon';
 
 const HeadingContainer = styled.div`
   box-shadow: ${({ theme }) => theme.mediumBS};
@@ -75,6 +76,8 @@ const UserCurrenciesContainer = styled(Box)`
   background-color: #222;
   width: 100%;
   min-height: 200px;
+  max-height: 500px;
+  overflow: scroll;
 `;
 
 const NewsContainer = styled(Box)`
@@ -110,6 +113,19 @@ const CurrencyItem = styled.li`
   &:hover {
     background-color: #ddd;
   }
+
+  ${({ isAdded }) =>
+    isAdded &&
+    css`
+      opacity: 0.7;
+      cursor: not-allowed;
+    `}
+`;
+
+const RemoveCurrencyButton = styled(Button)`
+  position: absolute;
+  top: 0;
+  right: 0;
 `;
 
 const ModalImage = styled.div`
@@ -119,9 +135,57 @@ const ModalImage = styled.div`
   align-items: center;
 `;
 
+const CurrencyItemContainer = styled(FlexContainer)`
+  margin: 24px auto;
+  width: 100%;
+  max-width: 600px;
+  background-color: ${({ theme }) => theme.darkPurple};
+  border-radius: 5px;
+  padding: 48px 16px 24px;
+  align-items: flex-start;
+  position: relative;
+
+  button {
+    margin: 0;
+    min-width: auto;
+    padding: 8px;
+  }
+`;
+
+const FlagContainer = styled(Box)`
+  flex-basis: 33.33%;
+  max-width: 100px;
+`;
+
+const CurrencyInfoContainer = styled(FlexContainer)`
+  flex-grow: 2;
+  align-items: flex-start;
+`;
+
+const Symbol = styled(Box)`
+  flex-basis: 10%;
+  margin: 0px 16px;
+
+  p {
+    font-size: 22px;
+    font-weight: 700;
+  }
+`;
+
+const InfoContainer = styled(FlexContainer)`
+  flex-grow: 2;
+  flex-direction: column;
+  align-items: flex-start;
+
+  div {
+    padding: 0;
+  }
+`;
+
 const Dashboard: React.FC<Props> = (): JSX.Element => {
   const [currencies, setCurrencies] = useState<CurrencyModel[] | null>(null);
-  const [convertAmount, setConverAmount] = useState<number>();
+  const [userCurrencies, setUserCurrencies] = useState<CurrencyModel[]>([]);
+  const [convertAmount, setConvertAmount] = useState<number>(0);
   const [currencyPick, setCurrencyPick] = useState<CurrencyModel | null>(null);
   const [showHeadlines, setShowHeadlines] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -129,6 +193,28 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
 
   const onCurrencyChange = ({ target }) => {
     setCurrencyPick(currencies.find((curr) => curr.value === target.value));
+  };
+
+  const onAddUserCurrenciesChange = (currencyItem) => {
+    const userCurrencyExists =
+      userCurrencies.filter(
+        (currency) => currency.abbreviation === currencyItem.abbreviation
+      ).length > 0;
+    if (!userCurrencyExists) {
+      setUserCurrencies([...userCurrencies, currencyItem]);
+    }
+  };
+
+  const onADeleteUserCurrenciesChange = (currencyItem) => {
+    setUserCurrencies(
+      userCurrencies.filter(
+        (currency) => currency.abbreviation !== currencyItem.abbreviation
+      )
+    );
+  };
+
+  const onConvertAmountChange = (value) => {
+    setConvertAmount(value);
   };
 
   const renderNews = (headlines) => {
@@ -210,8 +296,8 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
                       type="number"
                       id="convertAmount"
                       value={convertAmount}
-                      onChange={(e) => setConverAmount(e.target.value)}
-                      placeholder="0.00"
+                      onChange={(e) => onConvertAmountChange(e.target.value)}
+                      placeholder="0.0000"
                     />
                   </ConvertAmountContainer>
                 </FlexContainer>
@@ -232,7 +318,54 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
               </>
             )}
           </SelectedContainer>
-          <UserCurrenciesContainer>User Currencies</UserCurrenciesContainer>
+          <UserCurrenciesContainer>
+            {userCurrencies.length
+              ? userCurrencies.map((currency) => {
+                  if (currency.abbreviation !== currencyPick.abbreviation) {
+                    return (
+                      <CurrencyItemContainer key={currency.abbreviation}>
+                        <RemoveCurrencyButton
+                          onClick={() =>
+                            onADeleteUserCurrenciesChange(currency)
+                          }
+                        >
+                          <Icon className="fas fa-times" fontSize="20px" />
+                        </RemoveCurrencyButton>
+                        <FlagContainer>
+                          <Image src={currency?.flagURL} alt={currency.name} />
+                        </FlagContainer>
+                        <CurrencyInfoContainer>
+                          <Symbol>
+                            <Copy large>{currency.symbol}</Copy>
+                          </Symbol>
+                          <InfoContainer>
+                            <TextInput
+                              type="number"
+                              id={`convertAmount_${currency.abbreviation}`}
+                              value={
+                                convertAmount *
+                                rates.rates[currency.abbreviation]
+                              }
+                              disabled
+                              onChange={() => null}
+                              placeholder="0.0000"
+                            />
+                            <H5>{`${currency.abbreviation} - ${currency.name}`}</H5>
+                            <H6>
+                              1 {currencyPick.abbreviation} ={' '}
+                              {rates?.rates[currency.abbreviation]
+                                ? rates.rates[currency.abbreviation].toFixed(4)
+                                : 0}{' '}
+                              {currency.abbreviation}
+                            </H6>
+                          </InfoContainer>
+                        </CurrencyInfoContainer>
+                      </CurrencyItemContainer>
+                    );
+                  }
+                })
+              : null}
+          </UserCurrenciesContainer>
           <Button primary onClick={() => setShowModal(true)}>
             Add Currency
           </Button>
@@ -241,14 +374,21 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
       {showModal && (
         <Modal onClick={() => setShowModal(false)}>
           <CurrencyList>
-            {currencies.map(({ flagURL, abbreviation, name }) => (
-              <CurrencyItem>
+            {currencies.map((currency) => (
+              <CurrencyItem
+                onClick={() => onAddUserCurrenciesChange(currency)}
+                key={currency.abbreviation}
+                isAdded={userCurrencies.some(
+                  (userCurrency) =>
+                    userCurrency.abbreviation === currency.abbreviation
+                )}
+              >
                 <FlexContainer>
                   <ModalImage>
-                    <Image src={flagURL} alt={abbreviation} />
+                    <Image src={currency.flagURL} alt={currency.abbreviation} />
                   </ModalImage>
                   <Box>
-                    <Copy>{name}</Copy>
+                    <Copy>{currency.name}</Copy>
                   </Box>
                 </FlexContainer>
               </CurrencyItem>

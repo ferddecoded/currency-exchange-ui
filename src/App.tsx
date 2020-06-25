@@ -5,7 +5,7 @@ import { useDispatch, useSelector, Provider } from 'react-redux';
 
 import Landing from './containers/Landing';
 import AppContainer from './layout/AppContainer';
-import theme from './theme';
+import themeObject from './theme';
 import AppWrapper from './layout/AppWrapper';
 import store from './store';
 
@@ -60,7 +60,7 @@ const App = () => {
   }, []);
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={themeObject}>
       <Provider store={store}>
         <GlobalStyle />
         <Router>
