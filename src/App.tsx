@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { ThemeProvider, createGlobalStyle } from 'styled-components';
-import { useDispatch, useSelector, Provider } from 'react-redux';
+import { Provider } from 'react-redux';
 
 import Landing from './containers/Landing';
 import AppContainer from './layout/AppContainer';

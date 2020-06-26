@@ -9,6 +9,11 @@ import {
   fetchNews,
   fetchRates,
 } from '../store/dataSlice';
+import {
+  fetchUserCurrencies,
+  getUserCurrencies,
+  postUserCurrencies,
+} from '../store/currencySlice';
 
 import AppWrapper from '../layout/AppWrapper';
 import { H1, H2, H3, H4, H5, H6 } from '../components/typography/Heading';
@@ -23,6 +28,7 @@ import { CurrencyModel } from '../models/CurrencyModel';
 import Select from '../components/form/Select';
 import Modal from '../components/modal/Modal';
 import { Icon } from '../components/typography/Icon';
+import { getUser } from '../store/userSlice';
 
 const HeadingContainer = styled.div`
   box-shadow: ${({ theme }) => theme.mediumBS};
@@ -183,13 +189,21 @@ const InfoContainer = styled(FlexContainer)`
 `;
 
 const Dashboard: React.FC<Props> = (): JSX.Element => {
-  const [currencies, setCurrencies] = useState<CurrencyModel[] | null>(null);
-  const [userCurrencies, setUserCurrencies] = useState<CurrencyModel[]>([]);
+  const [currencies, setCurrencies] = useState<CurrencyModel[] | null>([]);
+  const [userCurrencies, setUserCurrencies] = useState<{ currency: string }[]>(
+    []
+  );
   const [convertAmount, setConvertAmount] = useState<number>(0);
   const [currencyPick, setCurrencyPick] = useState<CurrencyModel | null>(null);
   const [showHeadlines, setShowHeadlines] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const dispatch = useDispatch();
+
+  const { currencies: stateCurrencies, isFetching, news, rates } = useSelector(
+    getDataCurrencies
+  );
+  const { user } = useSelector(getUser);
+  const { currencies: fetchedCurrencies } = useSelector(getUserCurrencies);
 
   const onCurrencyChange = ({ target }) => {
     setCurrencyPick(currencies.find((curr) => curr.value === target.value));
@@ -198,19 +212,26 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
   const onAddUserCurrenciesChange = (currencyItem) => {
     const userCurrencyExists =
       userCurrencies.filter(
-        (currency) => currency.abbreviation === currencyItem.abbreviation
+        ({ currency }) => currency === currencyItem.abbreviation
       ).length > 0;
     if (!userCurrencyExists) {
       setUserCurrencies([...userCurrencies, currencyItem]);
+      if (user) {
+        dispatch(
+          postUserCurrencies({ currencies: [...userCurrencies, currencyItem] })
+        );
+      }
     }
   };
 
-  const onADeleteUserCurrenciesChange = (currencyItem) => {
-    setUserCurrencies(
-      userCurrencies.filter(
-        (currency) => currency.abbreviation !== currencyItem.abbreviation
-      )
+  const onDeleteUserCurrenciesChange = (currencyItem) => {
+    const updatedCurrencies = userCurrencies.filter(
+      ({ currency }) => currency !== currencyItem
     );
+    setUserCurrencies(updatedCurrencies);
+    if (user) {
+      dispatch(postUserCurrencies({ currencies: updatedCurrencies }));
+    }
   };
 
   const onConvertAmountChange = (value) => {
@@ -234,12 +255,20 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
     });
   };
 
-  const { currencies: stateCurrencies, isFetching, news, rates } = useSelector(
-    getDataCurrencies
-  );
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchUserCurrencies());
+    }
+  }, [user, dispatch]);
 
   useEffect(() => {
-    if (!currencies) {
+    if (user && fetchedCurrencies.length) {
+      setUserCurrencies(fetchedCurrencies);
+    }
+  }, [fetchedCurrencies, user]);
+
+  useEffect(() => {
+    if (!currencies.length) {
       dispatch(fetchCurrencies());
     }
   }, [dispatch, currencies]);
@@ -257,7 +286,7 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
       dispatch(fetchRates(abbreviation));
       dispatch(fetchNews(abbreviation));
     }
-  }, [currencyPick?.abbreviation]);
+  }, [currencyPick, dispatch]);
 
   if (isFetching) {
     return <Loading />;
@@ -270,6 +299,7 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
           <HeadingContainer>
             <H1>Currencies</H1>
           </HeadingContainer>
+
           <InputContainer>
             <H3>Select Your Currency</H3>
             <Select
@@ -278,6 +308,7 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
               onChange={onCurrencyChange}
             />
           </InputContainer>
+
           <SelectedContainer>
             {currencyPick && (
               <>
@@ -318,69 +349,79 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
               </>
             )}
           </SelectedContainer>
+
           <UserCurrenciesContainer>
-            {userCurrencies.length
-              ? userCurrencies.map((currency) => {
-                  if (currency.abbreviation !== currencyPick.abbreviation) {
+            {userCurrencies.length && currencies.length
+              ? userCurrencies.map(({ currency }) => {
+                  if (currency !== currencyPick.abbreviation) {
+                    const matchedCurrency = currencies.find(
+                      (curr) => curr.abbreviation === currency
+                    );
+
+                    const {
+                      abbreviation,
+                      flagURL,
+                      symbol,
+                      name,
+                    } = matchedCurrency;
+
+                    const rate = rates?.rates[abbreviation] || 0;
                     return (
-                      <CurrencyItemContainer key={currency.abbreviation}>
+                      <CurrencyItemContainer key={abbreviation}>
                         <RemoveCurrencyButton
-                          onClick={() =>
-                            onADeleteUserCurrenciesChange(currency)
-                          }
+                          onClick={() => onDeleteUserCurrenciesChange(currency)}
                         >
                           <Icon className="fas fa-times" fontSize="20px" />
                         </RemoveCurrencyButton>
                         <FlagContainer>
-                          <Image src={currency?.flagURL} alt={currency.name} />
+                          <Image src={flagURL} alt={name} />
                         </FlagContainer>
                         <CurrencyInfoContainer>
                           <Symbol>
-                            <Copy large>{currency.symbol}</Copy>
+                            <Copy large>{symbol}</Copy>
                           </Symbol>
                           <InfoContainer>
                             <TextInput
                               type="number"
-                              id={`convertAmount_${currency.abbreviation}`}
-                              value={
-                                convertAmount *
-                                rates.rates[currency.abbreviation]
-                              }
+                              id={`convertAmount_${abbreviation}`}
+                              value={(convertAmount * rate).toFixed(4)}
                               disabled
                               onChange={() => null}
                               placeholder="0.0000"
                             />
-                            <H5>{`${currency.abbreviation} - ${currency.name}`}</H5>
+                            <H5>{`${abbreviation} - ${name}`}</H5>
                             <H6>
                               1 {currencyPick.abbreviation} ={' '}
-                              {rates?.rates[currency.abbreviation]
-                                ? rates.rates[currency.abbreviation].toFixed(4)
-                                : 0}{' '}
-                              {currency.abbreviation}
+                              {rate ? rate.toFixed(4) : 0} {abbreviation}
                             </H6>
                           </InfoContainer>
                         </CurrencyInfoContainer>
                       </CurrencyItemContainer>
                     );
                   }
+                  return null;
                 })
               : null}
           </UserCurrenciesContainer>
+
           <Button primary onClick={() => setShowModal(true)}>
             Add Currency
           </Button>
         </Grid>
       </AppWrapper>
+
       {showModal && (
         <Modal onClick={() => setShowModal(false)}>
           <CurrencyList>
             {currencies.map((currency) => (
               <CurrencyItem
-                onClick={() => onAddUserCurrenciesChange(currency)}
+                onClick={() =>
+                  onAddUserCurrenciesChange({ currency: currency.abbreviation })
+                }
                 key={currency.abbreviation}
                 isAdded={userCurrencies.some(
                   (userCurrency) =>
-                    userCurrency.abbreviation === currency.abbreviation
+                    userCurrency.currency === currency.abbreviation
                 )}
               >
                 <FlexContainer>
