@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 const WrapperContainer = styled.div`
-  padding: 0px 12px 48px;
+  padding: 24px 12px 48px;
   max-width: 800px;
   height: 100%;
   margin: 0 auto;
