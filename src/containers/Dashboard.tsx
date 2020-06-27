@@ -198,7 +198,7 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
 
   return (
     <>
-      <Logout>
+      <Logout as="header">
         <H4>Welcome, {user.name}</H4>
         <Button onClick={() => dispatch(logoutUser())}>
           <Icon className="fas fa-sign-out-alt" fontSize="20px" />
