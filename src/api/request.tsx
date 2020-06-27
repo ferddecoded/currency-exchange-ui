@@ -2,7 +2,9 @@ import axios from 'axios';
 
 export const client = axios.create({
   baseURL:
-    process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '',
+    process.env.NODE_ENV === 'development'
+      ? 'http://localhost:5000'
+      : 'https://api-currency-exchange.herokuapp.com/',
 });
 
 const request = (options) => {
