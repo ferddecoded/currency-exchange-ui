@@ -14,19 +14,19 @@ import {
   getUserCurrencies,
   postUserCurrencies,
 } from '../store/currencySlice';
+import { getUser } from '../store/userSlice';
 
 import AppWrapper from '../layout/AppWrapper';
+import Loading from '../layout/Loading';
 import { H1, H3 } from '../components/typography/Heading';
 import { Box } from '../components/box/Box';
 import { Image } from '../components/image/Image';
 import { Grid } from '../components/grid/Grid';
 import { Copy } from '../components/typography/Copy';
-import Loading from '../layout/Loading';
 import { Button } from '../components/button/Button';
 import { CurrencyModel } from '../models/CurrencyModel';
 import Select from '../components/form/Select';
 import Modal from '../components/modal/Modal';
-import { getUser } from '../store/userSlice';
 import SelectedCurrency from '../components/selectedCurrency/SelectedCurrency';
 import UserCurrencies from '../components/userCurrencies/UserCurrencies';
 
