@@ -99,8 +99,6 @@ const ModalImage = styled.div`
 `;
 
 const Logout = styled(FlexContainer)`
-  position: absolute;
-  top: 0;
   width: 100%;
 `;
 
@@ -198,13 +196,13 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
 
   return (
     <>
-      <Logout as="header">
-        <H4>Welcome, {user.name}</H4>
-        <Button onClick={() => dispatch(logoutUser())}>
-          <Icon className="fas fa-sign-out-alt" fontSize="20px" />
-        </Button>
-      </Logout>
       <AppWrapper>
+        <Logout as="header">
+          <H4>Welcome, {user.name}</H4>
+          <Button onClick={() => dispatch(logoutUser())}>
+            <Icon className="fas fa-sign-out-alt" fontSize="20px" />
+          </Button>
+        </Logout>
         <Grid>
           <HeadingContainer>
             <H1>Currencies</H1>
