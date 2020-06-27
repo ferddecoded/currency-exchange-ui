@@ -17,4 +17,4 @@ This is the UI for the exchanges application that utilizes the MERN framework. T
 - bcrypt
 - styled-components
 
-Live application: [Exchanges](https://5ef7b048e19d754e7161aea4--currency-exhcange.netlify.app/dashboard)
+Live application: [Exchanges](https://5ef7b048e19d754e7161aea4--currency-exhcange.netlify.app/)
