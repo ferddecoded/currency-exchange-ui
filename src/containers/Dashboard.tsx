@@ -14,7 +14,7 @@ import {
   getUserCurrencies,
   postUserCurrencies,
 } from '../store/currencySlice';
-import { getUser } from '../store/userSlice';
+import { getUser, logoutUser } from '../store/userSlice';
 
 import AppWrapper from '../layout/AppWrapper';
 import Loading from '../layout/Loading';
@@ -29,6 +29,7 @@ import Select from '../components/form/Select';
 import Modal from '../components/modal/Modal';
 import SelectedCurrency from '../components/selectedCurrency/SelectedCurrency';
 import UserCurrencies from '../components/userCurrencies/UserCurrencies';
+import { Icon } from '../components/typography/Icon';
 
 const HeadingContainer = styled.div`
   box-shadow: ${({ theme }) => theme.mediumBS};
@@ -95,6 +96,12 @@ const ModalImage = styled.div`
   height: 32px;
   display: flex;
   align-items: center;
+`;
+
+const Logout = styled(Box)`
+  position: absolute;
+  top: 0;
+  right: 0;
 `;
 
 const Dashboard: React.FC<Props> = (): JSX.Element => {
@@ -191,6 +198,11 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
 
   return (
     <>
+      <Logout>
+        <Button onClick={() => dispatch(logoutUser())}>
+          <Icon className="fas fa-sign-out-alt" fontSize="20px" />
+        </Button>
+      </Logout>
       <AppWrapper>
         <Grid>
           <HeadingContainer>
@@ -237,23 +249,22 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
       {showModal && (
         <Modal onClick={() => setShowModal(false)}>
           <CurrencyList>
-            {currencies.map((currency) => (
+            {currencies.map(({ abbreviation, flagURL, name }) => (
               <CurrencyItem
-                onClick={() =>
-                  onAddUserCurrenciesChange({ currency: currency.abbreviation })
-                }
-                key={currency.abbreviation}
+                onClick={() => {
+                  return onAddUserCurrenciesChange({ currency: abbreviation });
+                }}
+                key={abbreviation}
                 isAdded={userCurrencies.some(
-                  (userCurrency) =>
-                    userCurrency.currency === currency.abbreviation
+                  (userCurrency) => userCurrency.currency === abbreviation
                 )}
               >
                 <FlexContainer>
                   <ModalImage>
-                    <Image src={currency.flagURL} alt={currency.abbreviation} />
+                    <Image src={flagURL} alt={abbreviation} />
                   </ModalImage>
                   <Box>
-                    <Copy>{currency.name}</Copy>
+                    <Copy>{name}</Copy>
                   </Box>
                 </FlexContainer>
               </CurrencyItem>

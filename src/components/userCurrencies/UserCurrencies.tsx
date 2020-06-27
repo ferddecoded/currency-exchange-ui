@@ -19,7 +19,7 @@ const FlexContainer = styled.div`
 
 const CurrencyItemContainer = styled(FlexContainer)`
   margin: 24px auto;
-  width: 100%;
+  width: calc(100% - 32px);
   max-width: 600px;
   background-color: ${({ theme }) => theme.darkPurple};
   border-radius: 5px;
