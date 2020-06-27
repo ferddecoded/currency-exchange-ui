@@ -18,7 +18,7 @@ import { getUser, logoutUser } from '../store/userSlice';
 
 import AppWrapper from '../layout/AppWrapper';
 import Loading from '../layout/Loading';
-import { H1, H3 } from '../components/typography/Heading';
+import { H1, H3, H4 } from '../components/typography/Heading';
 import { Box } from '../components/box/Box';
 import { Image } from '../components/image/Image';
 import { Grid } from '../components/grid/Grid';
@@ -98,10 +98,10 @@ const ModalImage = styled.div`
   align-items: center;
 `;
 
-const Logout = styled(Box)`
+const Logout = styled(FlexContainer)`
   position: absolute;
   top: 0;
-  right: 0;
+  width: 100%;
 `;
 
 const Dashboard: React.FC<Props> = (): JSX.Element => {
@@ -199,6 +199,7 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
   return (
     <>
       <Logout>
+        <H4>Welcome, {user.name}</H4>
         <Button onClick={() => dispatch(logoutUser())}>
           <Icon className="fas fa-sign-out-alt" fontSize="20px" />
         </Button>
