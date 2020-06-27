@@ -16,8 +16,7 @@ import {
 } from '../store/currencySlice';
 
 import AppWrapper from '../layout/AppWrapper';
-import { H1, H2, H3, H4, H5, H6 } from '../components/typography/Heading';
-import { TextInput } from '../components/form/TextInput';
+import { H1, H3 } from '../components/typography/Heading';
 import { Box } from '../components/box/Box';
 import { Image } from '../components/image/Image';
 import { Grid } from '../components/grid/Grid';
@@ -27,8 +26,9 @@ import { Button } from '../components/button/Button';
 import { CurrencyModel } from '../models/CurrencyModel';
 import Select from '../components/form/Select';
 import Modal from '../components/modal/Modal';
-import { Icon } from '../components/typography/Icon';
 import { getUser } from '../store/userSlice';
+import SelectedCurrency from '../components/selectedCurrency/SelectedCurrency';
+import UserCurrencies from '../components/userCurrencies/UserCurrencies';
 
 const HeadingContainer = styled.div`
   box-shadow: ${({ theme }) => theme.mediumBS};
@@ -60,23 +60,6 @@ const SelectedContainer = styled.div`
   padding: 16px 0px;
 `;
 
-const ConvertAmountContainer = styled(Box)`
-  flex-basis: 50%;
-`;
-
-const LabelContainer = styled(Box)`
-  flex-basis: 50%;
-`;
-
-const ImageContainer = styled(Box)`
-  width: 20%;
-  margin: 24px auto;
-
-  @media (max-width: 768px) {
-    width: 50%;
-  }
-`;
-
 const UserCurrenciesContainer = styled(Box)`
   margin: 48px auto;
   background-color: #222;
@@ -85,27 +68,6 @@ const UserCurrenciesContainer = styled(Box)`
   max-height: 500px;
   overflow: scroll;
 `;
-
-const NewsContainer = styled(Box)`
-  background-color: ${({ theme }) => theme.primaryNavy};
-  margin: 16px 32px;
-  width: calc(100% - 64px);
-  border-radius: 5px;
-  padding: 16px;
-  transition: all 0.4s;
-  box-shadow: 0 0 0px #e1e1e1;
-
-  &:hover {
-    box-shadow: 0 0 5px #e1e1e1;
-  }
-`;
-
-const NewsCopy = styled(Copy)`
-  text-overflow: ellipsis;
-  color: ${({ theme }) => theme.lightgrey};
-`;
-
-const StyledGrid = styled(Grid)``;
 
 const CurrencyList = styled.ul`
   list-style: none;
@@ -128,12 +90,6 @@ const CurrencyItem = styled.li`
     `}
 `;
 
-const RemoveCurrencyButton = styled(Button)`
-  position: absolute;
-  top: 0;
-  right: 0;
-`;
-
 const ModalImage = styled.div`
   flex-basis: 48px;
   height: 32px;
@@ -141,55 +97,8 @@ const ModalImage = styled.div`
   align-items: center;
 `;
 
-const CurrencyItemContainer = styled(FlexContainer)`
-  margin: 24px auto;
-  width: 100%;
-  max-width: 600px;
-  background-color: ${({ theme }) => theme.darkPurple};
-  border-radius: 5px;
-  padding: 48px 16px 24px;
-  align-items: flex-start;
-  position: relative;
-
-  button {
-    margin: 0;
-    min-width: auto;
-    padding: 8px;
-  }
-`;
-
-const FlagContainer = styled(Box)`
-  flex-basis: 33.33%;
-  max-width: 100px;
-`;
-
-const CurrencyInfoContainer = styled(FlexContainer)`
-  flex-grow: 2;
-  align-items: flex-start;
-`;
-
-const Symbol = styled(Box)`
-  flex-basis: 10%;
-  margin: 0px 16px;
-
-  p {
-    font-size: 22px;
-    font-weight: 700;
-  }
-`;
-
-const InfoContainer = styled(FlexContainer)`
-  flex-grow: 2;
-  flex-direction: column;
-  align-items: flex-start;
-
-  div {
-    padding: 0;
-  }
-`;
-
 const Dashboard: React.FC<Props> = (): JSX.Element => {
-  const [currencies, setCurrencies] = useState<CurrencyModel[] | null>([]);
+  const [currencies, setCurrencies] = useState<CurrencyModel[]>([]);
   const [userCurrencies, setUserCurrencies] = useState<{ currency: string }[]>(
     []
   );
@@ -238,41 +147,28 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
     setConvertAmount(value);
   };
 
-  const renderNews = (headlines) => {
-    return headlines.map((headline, index) => {
-      return (
-        <a
-          href={headline.url}
-          aria-label="link to news article"
-          key={index.toString()}
-        >
-          <NewsContainer>
-            <H5 color="#2d2d37">{headline?.name}</H5>
-            <NewsCopy>{headline?.description}</NewsCopy>
-          </NewsContainer>
-        </a>
-      );
-    });
-  };
-
+  // fetch user currencies if user exists
   useEffect(() => {
     if (user) {
       dispatch(fetchUserCurrencies());
     }
   }, [user, dispatch]);
 
+  // if fetched user currencies exists, set user currencies
   useEffect(() => {
     if (user && fetchedCurrencies.length) {
       setUserCurrencies(fetchedCurrencies);
     }
   }, [fetchedCurrencies, user]);
 
+  // set data currencies if fetched successfully
   useEffect(() => {
     if (!currencies.length) {
       dispatch(fetchCurrencies());
     }
   }, [dispatch, currencies]);
 
+  // if data currencies exist, set currencypick
   useEffect(() => {
     if (stateCurrencies.length) {
       setCurrencyPick(stateCurrencies.find((curr) => curr.value === 'CAD'));
@@ -280,6 +176,7 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
     }
   }, [stateCurrencies]);
 
+  // fetch rate and news when curencyPick is set
   useEffect(() => {
     if (currencyPick?.abbreviation) {
       const { abbreviation } = currencyPick;
@@ -310,98 +207,25 @@ const Dashboard: React.FC<Props> = (): JSX.Element => {
           </InputContainer>
 
           <SelectedContainer>
-            {currencyPick && (
-              <>
-                <ImageContainer>
-                  <Image src={currencyPick?.flagURL} alt={currencyPick.name} />
-                </ImageContainer>
-                <FlexContainer>
-                  <LabelContainer>
-                    <H4>
-                      Enter Amount: {currencyPick?.abbreviation}{' '}
-                      {currencyPick?.symbol}
-                    </H4>
-                  </LabelContainer>
-                  <ConvertAmountContainer>
-                    <TextInput
-                      type="number"
-                      id="convertAmount"
-                      value={convertAmount}
-                      onChange={(e) => onConvertAmountChange(e.target.value)}
-                      placeholder="0.0000"
-                    />
-                  </ConvertAmountContainer>
-                </FlexContainer>
-                <H2>Recent Headlines</H2>
-                <StyledGrid>
-                  {showHeadlines
-                    ? news?.length
-                      ? renderNews(news)
-                      : 'No headlines at the moment.'
-                    : null}
-                </StyledGrid>
-                <Button
-                  primary
-                  onClick={() => setShowHeadlines(!showHeadlines)}
-                >
-                  {showHeadlines ? 'Hide Headlines' : 'Show Headlines'}
-                </Button>
-              </>
-            )}
+            <SelectedCurrency
+              currencyPick={currencyPick}
+              convertAmount={convertAmount}
+              showHeadlines={showHeadlines}
+              news={news}
+              onConvertAmountChange={onConvertAmountChange}
+              onHideHeadlines={() => setShowHeadlines(!showHeadlines)}
+            />
           </SelectedContainer>
 
           <UserCurrenciesContainer>
-            {userCurrencies.length && currencies.length
-              ? userCurrencies.map(({ currency }) => {
-                  if (currency !== currencyPick.abbreviation) {
-                    const matchedCurrency = currencies.find(
-                      (curr) => curr.abbreviation === currency
-                    );
-
-                    const {
-                      abbreviation,
-                      flagURL,
-                      symbol,
-                      name,
-                    } = matchedCurrency;
-
-                    const rate = rates?.rates[abbreviation] || 0;
-                    return (
-                      <CurrencyItemContainer key={abbreviation}>
-                        <RemoveCurrencyButton
-                          onClick={() => onDeleteUserCurrenciesChange(currency)}
-                        >
-                          <Icon className="fas fa-times" fontSize="20px" />
-                        </RemoveCurrencyButton>
-                        <FlagContainer>
-                          <Image src={flagURL} alt={name} />
-                        </FlagContainer>
-                        <CurrencyInfoContainer>
-                          <Symbol>
-                            <Copy large>{symbol}</Copy>
-                          </Symbol>
-                          <InfoContainer>
-                            <TextInput
-                              type="number"
-                              id={`convertAmount_${abbreviation}`}
-                              value={(convertAmount * rate).toFixed(4)}
-                              disabled
-                              onChange={() => null}
-                              placeholder="0.0000"
-                            />
-                            <H5>{`${abbreviation} - ${name}`}</H5>
-                            <H6>
-                              1 {currencyPick.abbreviation} ={' '}
-                              {rate ? rate.toFixed(4) : 0} {abbreviation}
-                            </H6>
-                          </InfoContainer>
-                        </CurrencyInfoContainer>
-                      </CurrencyItemContainer>
-                    );
-                  }
-                  return null;
-                })
-              : null}
+            <UserCurrencies
+              rates={rates}
+              currencyPick={currencyPick}
+              currencies={currencies}
+              convertAmount={convertAmount}
+              userCurrencies={userCurrencies}
+              onDeleteUserCurrenciesChange={onDeleteUserCurrenciesChange}
+            />
           </UserCurrenciesContainer>
 
           <Button primary onClick={() => setShowModal(true)}>
