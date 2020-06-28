@@ -18,4 +18,5 @@ This is the UI for the exchanges application that utilizes the MERN framework. T
 - styled-components
 
 Live application: [Exchanges](https://currency-exchanges.netlify.app/)
+
 For backend:[Backend](https://github.com/ferddecoded/currency-exchange)
